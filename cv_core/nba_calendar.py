@@ -1,0 +1,49 @@
+"""
+The NBA game date — one rule, one timezone.
+
+A "game date" is the night a game belongs to, not the calendar date it ended
+on: a game tipping at 22:30 ET finishes after midnight and still belongs to the
+day it started. The rule everywhere is **6 AM Eastern** — before 6 AM ET we are
+still on the previous night's game date.
+
+Eastern, specifically, because the API's readers ask in Eastern. Both services
+share this module so the writer of a date column and its reader cannot drift
+apart by timezone: for years the pipelines derived their dates in Central,
+which disagrees with the Eastern rule for exactly one hour a day
+(06:00–06:59 ET) — a live writer/reader split until 2026
+(PRODUCTION_READINESS item 4).
+
+Pipelines should not call this directly for batch work: the trigger endpoint
+computes the batch's date once and hands it to every pipeline in the batch
+(`PipelineContext.nba_date` / `ctx.game_date()`), so a batch straddling the
+cutoff cannot write half its rows under one date and half under the next.
+"""
+
+from __future__ import annotations
+
+from datetime import date, datetime, timedelta
+
+import pytz
+
+EASTERN = pytz.timezone("US/Eastern")
+
+# Before this hour (Eastern) we are still on the previous night's game date.
+DAY_ROLLOVER_HOUR_ET = 6
+
+
+def nba_date_et(now: datetime | None = None) -> date:
+    """The NBA game date for a moment in time, on the 6 AM ET rule.
+
+    `now` may be in any timezone (it is converted) or naive (read as Eastern).
+    Defaults to the current time.
+    """
+    if now is None:
+        now_et = datetime.now(EASTERN)
+    elif now.tzinfo is None:
+        now_et = EASTERN.localize(now)
+    else:
+        now_et = now.astimezone(EASTERN)
+
+    if now_et.hour < DAY_ROLLOVER_HOUR_ET:
+        return (now_et - timedelta(days=1)).date()
+    return now_et.date()
