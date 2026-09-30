@@ -44,7 +44,7 @@ no git binary needed in Docker builds; `railway up` tarballs a single-repo
 checkout, so path dependencies are impossible):
 
 ```
-cv-core @ https://github.com/court-vision/cv-core/archive/refs/tags/v0.1.0.tar.gz
+cv-core @ https://github.com/court-vision/cv-core/archive/refs/tags/v0.1.1.tar.gz
 ```
 
 ## Releasing

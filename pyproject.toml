@@ -4,15 +4,15 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cv-core"
-version = "0.1.0"
+version = "0.1.1"
 description = "Shared utilities for Court Vision services: NBA calendar, season keys, crypto, resilience, logging, scoring vocabulary, fantasy-points formula"
 requires-python = ">=3.12"
 dependencies = [
     # Floors, not pins: the consumers' requirements.txt pin exact versions.
     # cryptography is the one with a hard cross-service constraint — both
     # services decrypt the same usr.provider_connections rows, so their pins
-    # must stay in lockstep with each other (46.0.3 at time of writing).
-    "cryptography>=46.0.3",
+    # must stay in lockstep with each other (50.0.0 at time of writing).
+    "cryptography>=50.0.0",
     "structlog>=24.4.0",
     "sentry-sdk>=2.68.0",
     "tenacity>=9.0.0",
