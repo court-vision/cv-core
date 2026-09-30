@@ -54,6 +54,15 @@ def incoming_correlation_id(request: Request) -> str:
 
 def route_template(request: Request) -> Optional[str]:
     """The matched route's path template (`/v1/players/{player_id}/stats`), if any."""
+    # FastAPI >= 0.137 no longer clones included routes: scope["route"] is the
+    # router's own APIRoute, whose path lacks the include_router prefix
+    # (`/teams/` for `/v1/internal/teams/`). The prefixed path is on the
+    # effective route context FastAPI keeps under scope["fastapi"].
+    fastapi_scope = request.scope.get("fastapi")
+    if isinstance(fastapi_scope, dict):
+        effective_path = getattr(fastapi_scope.get("effective_route_context"), "path", None)
+        if effective_path:
+            return effective_path
     route = request.scope.get("route")
     if route is not None:
         return getattr(route, "path", None)
